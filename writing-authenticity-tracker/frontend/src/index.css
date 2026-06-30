@@ -1,0 +1,611 @@
+/* ============================================================
+   Design concept: "Forensic writing log"
+   This isn't a generic SaaS dashboard — it should feel like an
+   evidence/lab report: monospace data, hairline rules, a single
+   warning-amber accent reserved for the suspicion score itself.
+   Background is a cool paper-white, not warm cream (avoiding the
+   generic AI-design default), with ink-navy as primary text.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;0,700;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --paper: #f4f5f3;
+  --ink: #1c2024;
+  --ink-soft: #565d66;
+  --rule: #d4d7da;
+  --accent-amber: #b8860b;
+  --accent-amber-soft: #fdf3df;
+  --green: #2e7d32;
+  --red: #b03a2e;
+  --mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --serif: 'Source Serif 4', Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+/* ---------- Header ---------- */
+
+.header {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 24px;
+  margin-bottom: 36px;
+}
+
+.header h1 {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: 540px;
+}
+
+/* ---------- Writing panel ---------- */
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rule);
+  display: inline-block;
+}
+
+.dot.active {
+  background: var(--red);
+  animation: pulse 1.6s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.editor {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  padding: 18px;
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink);
+  resize: vertical;
+  outline: none;
+}
+
+.editor:focus {
+  box-shadow: 0 0 0 3px var(--accent-amber-soft);
+  border-color: var(--accent-amber);
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+
+.char-count {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1.5px solid var(--ink);
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn-primary:hover {
+  background: #000;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+}
+
+.btn-secondary:hover {
+  background: var(--rule);
+}
+
+.error-banner {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #fdecea;
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-size: 12.5px;
+  border-radius: 2px;
+}
+
+/* ---------- Report panel ---------- */
+
+.report-panel {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.score-card {
+  border: 2px solid;
+  border-radius: 3px;
+  padding: 28px;
+  text-align: center;
+  margin-bottom: 16px;
+  background: #fff;
+}
+
+.score-number {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 56px;
+  line-height: 1;
+}
+
+.score-max {
+  font-size: 22px;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.verdict-label {
+  margin-top: 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.disclaimer {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  background: var(--accent-amber-soft);
+  border-left: 3px solid var(--accent-amber);
+  padding: 12px 16px;
+  margin: 0 0 32px;
+}
+
+h2 {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 700;
+  border-bottom: 1.5px solid var(--ink);
+  padding-bottom: 8px;
+  margin: 0 0 16px;
+}
+
+.signals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 36px;
+}
+
+.signal-row {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 14px;
+}
+
+.signal-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.signal-name {
+  font-weight: 600;
+}
+
+.signal-contribution {
+  color: var(--ink-soft);
+}
+
+.signal-bar-track {
+  height: 5px;
+  background: var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.signal-bar-fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.signal-value {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin-bottom: 32px;
+}
+
+.stat-box {
+  background: #fff;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.stat-value {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .score-number {
+    font-size: 44px;
+  }
+}
+
+/* ============================================================
+   v2 additions: calibration, ML, baseline, GenAI/agent layers
+   ============================================================ */
+
+.loading-state {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+/* ---------- Calibration ---------- */
+
+.calibration-panel {
+  border: 1.5px dashed var(--accent-amber);
+  border-radius: 3px;
+  padding: 20px;
+  background: var(--accent-amber-soft);
+}
+
+.calibration-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 3px 10px;
+  border-radius: 2px;
+  margin-bottom: 12px;
+}
+
+.calibration-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  margin: 0 0 8px;
+  border: none;
+  padding: 0;
+}
+
+.char-count.ready {
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* ---------- Layer tag on score card ---------- */
+
+.layer-tag {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+/* ---------- GenAI toggle row (writing panel) ---------- */
+
+.genai-toggle-row {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.genai-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.genai-toggle.disabled {
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+
+.genai-toggle input {
+  accent-color: var(--accent-amber);
+}
+
+.genai-hint {
+  font-size: 11px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* ---------- ML card ---------- */
+
+.ml-card {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 18px;
+  margin-bottom: 32px;
+}
+
+.ml-predicted {
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.ml-prob-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.ml-prob-track {
+  height: 8px;
+  background: var(--rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ml-prob-fill {
+  height: 100%;
+  background: var(--ink);
+}
+
+.ml-prob-value {
+  text-align: right;
+  color: var(--ink-soft);
+}
+
+.ml-factors {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.ml-factors-label {
+  color: var(--ink-soft);
+  margin-right: 4px;
+}
+
+.factor-pill {
+  background: var(--rule);
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+/* ---------- Baseline card ---------- */
+
+.baseline-card {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 18px;
+  margin-bottom: 32px;
+}
+
+.baseline-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.baseline-row:last-of-type {
+  border-bottom: none;
+}
+
+.deviation-flags {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--red);
+}
+
+.deviation-flags li {
+  margin-bottom: 4px;
+}
+
+.no-deviation {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--green);
+}
+
+.empty-layer {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-style: italic;
+  padding: 14px 0 32px;
+}
+
+/* ---------- GenAI text card ---------- */
+
+.genai-card {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.genai-score-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.genai-reasoning {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---------- Agent review card ---------- */
+
+.agent-card {
+  border-radius: 2px;
+  padding: 18px;
+  margin-bottom: 32px;
+  border: 1.5px solid;
+}
+
+.agent-card.flagged {
+  border-color: var(--red);
+  background: #fdecea;
+}
+
+.agent-card.clear {
+  border-color: var(--green);
+  background: #eaf5ea;
+}
+
+.agent-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.agent-confidence {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+.agent-reasoning {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.drafted-message {
+  background: #fff;
+  border-left: 3px solid var(--ink);
+  padding: 12px 14px;
+  border-radius: 2px;
+}
+
+.drafted-message-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.drafted-message-body {
+  font-size: 13px;
+  line-height: 1.6;
+  font-family: var(--serif);
+}
